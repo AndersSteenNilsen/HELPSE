@@ -1,0 +1,1 @@
+Get and build SEAL-python, copy the `.so` file to root, GLHF
