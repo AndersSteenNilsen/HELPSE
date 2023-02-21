@@ -13,6 +13,7 @@ from seal import (
     Plaintext,
 )
 import sys
+from LPSE import average_strength_value, pass_vector
 
 
 def print_vector(vector):
@@ -47,6 +48,10 @@ def int_to_hex(numbers: list[int]) -> str:
     if isinstance(numbers, int):
         numbers = [numbers]
     return ''.join('{:02X}'.format(a) for a in numbers)
+
+def he_invert(encrypted_value, evaluator: Evaluator, iterations=5):
+    a_0 = evaluator.
+
 
 def HELPSE(password: str) -> tuple[float, str]:
     context, encryptor, evaluator, decryptor, batch_encoder, relin_keys = FHE_context()
@@ -84,25 +89,20 @@ def HELPSE(password: str) -> tuple[float, str]:
     decrypted_result = decryptor.decrypt(x_added)
     decoded_result = batch_encoder.decode(decrypted_result)
 
-    pass
+    
+    slots = [0] * slot_count
+    for i, value in enumerate(pass_vector(password=password)):
+        slots[i] = value
+    slots[:4] = pass_vector(password=password)
+    encoded_slots = batch_encoder.encode(slots)
+    encrypted_slots = encryptor.encrypt(encoded_slots)
+
 
     # Can delete below this...
-    pod_matrix = [0] * slot_count
     pod_matrix[0] = value1
     pod_matrix[row_size] = value2
 
-    plain_matrix = Plaintext()
-    crtbuilder.compose(pod_matrix, plain_matrix)
 
-    # Next we encrypt the plaintext as usual.
-    encrypted_matrix = Ciphertext()
-    print("Encrypting: ")
-    encryptor.encrypt(plain_matrix, encrypted_matrix)
-    print("Done")
-    print("Noise budget in fresh encryption: " +
-            (str)(decryptor.invariant_noise_budget(encrypted_matrix)) + " bits")
-
-    pass
 
 
 def example_bgv_basics():
