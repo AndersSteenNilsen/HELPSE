@@ -14,7 +14,7 @@ from seal import (
 )
 import sys
 from LPSE import average_strength_value, pass_vector
-
+from math import comb
 
 def print_vector(vector):
     print('[ ', end='')
@@ -49,9 +49,67 @@ def int_to_hex(numbers: list[int]) -> str:
         numbers = [numbers]
     return ''.join('{:02X}'.format(a) for a in numbers)
 
-def he_invert(encrypted_value, evaluator: Evaluator, iterations=5):
-    a_0 = evaluator.
+def step_func(a, evaluator:Evaluator, n_c = 4):
+    sigma_j = []
+    for j in range(n_c):
+        k = 1/4**j * comb(2*j,j)
+        if j == 0:
+            b = evaluator.multiply_plain(a, Plaintext(str(k)))
+            sigma_j.append(b)
+            continue
 
+        a_squared = evaluator.square(a)
+        a_squared_minus = evaluator.negate(a_squared)
+        b = evaluator.add_plain(a_squared_minus, Plaintext('1'))
+        if j>1:
+            b = evaluator.exponentiate(b, Plaintext(str(j)))
+        b = evaluator.multiply(a, b)
+        b = evaluator.multiply_plain(b, Plaintext(str(k)))
+        sigma_j.append(b)
+    return evaluator.add_many(sigma_j)
+
+def he_compare(encrypted_x, encrypted_y, evaluator: Evaluator, n_c = 4, d_c =4):
+    a =evaluator.sub(encrypted_x, encrypted_y)
+    for i in range(d_c):
+        a = step_func(a)
+    a = evaluator.add_plain(a, Plaintext('1'))
+    a = evaluator.multiply_plain(a, Plaintext('0.5'))
+    return a
+
+def he_invert(encrypted_value, evaluator: Evaluator, iterations=5):
+    x_neg = evaluator.negate(encrypted_value)
+    a = evaluator.add_plain(x_neg, Plaintext('2'))
+    b = evaluator.add_plain(x_neg, Plaintext('1'))
+    for i in range(iterations):
+        b = evaluator.square(b)
+        a = evaluator.multiply(a, evaluator.add_plain(b, Plaintext('1')))
+    return a
+
+def he_max(x,y, evaluator: Evaluator):
+    _max = evaluator.add(x,y)
+    diff = evaluator.sub(x,y)
+    diff_sq = evaluator.square(diff)
+    diff_len = he_sqrt(diff_sq)
+    _max = evaluator.add(_max, diff_len)
+    return evaluator.multiply_plain(_max, Plaintext('0.5'))
+
+def he_min(x,y, evaluator: Evaluator):
+    _max = evaluator.add(x,y)
+    diff = evaluator.sub(x,y)
+    diff_sq = evaluator.square(diff)
+    diff_len = he_sqrt(diff_sq)
+    _max = evaluator.sub(_max, diff_len)
+    return evaluator.multiply_plain(_max, Plaintext('0.5'))
+
+def he_sqrt(x, iterations=5, evaluator: Evaluator):
+    a = x
+    b = evaluator.sub_plain(x, Plaintext('1'))
+    for _ in range(iterations):
+        minus_b_half = evaluator.add_plain( evaluator.multiply_plain(evaluator.negate(b), Plaintext('0.5')), Plaintext('1'))
+        a = evaluator.multiply(a,minus_b_half)
+        b = evaluator.multiply(evaluator.square(b), evaluator.sub_plain(b,Plaintext('3')))
+        b = evaluator.multiply_plain(b, Plaintext('0.25'))
+    return a
 
 def HELPSE(password: str) -> tuple[float, str]:
     context, encryptor, evaluator, decryptor, batch_encoder, relin_keys = FHE_context()
