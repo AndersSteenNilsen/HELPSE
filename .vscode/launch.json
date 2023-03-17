@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Example_5_CKKS",
+            "type": "python",
+            "request": "launch",
+            "program": "5_CKKS_Basics.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
             "name": "LPSE",
             "type": "python",
             "request": "launch",
