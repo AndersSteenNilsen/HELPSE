@@ -81,3 +81,5 @@ def strong_pass_vector(pass_length=18):  # A random password should have this ve
 
 if __name__ == '__main__':
     print(LPSE(sys.argv[1]))
+else:
+    print(LPSE('L33tP4ssw*rd'))
