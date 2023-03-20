@@ -112,6 +112,8 @@ def he_sqrt(x, iterations=5):
         b_half = evaluator.multiply_plain(evaluator.negate(b), p_05)
         evaluator.relinearize_inplace(b_half, relin_keys)
         evaluator.rescale_to_next_inplace(b_half)
+        #b_half.scale(2.0**40)
+        evaluator.mod_switch_to_inplace(p_1, b_half.parms_id())
         minus_b_half = evaluator.add_plain(b_half, p_1)
         a = evaluator.multiply(a,minus_b_half)
         b = evaluator.multiply(evaluator.square(b), evaluator.sub_plain(b, p_3))
